@@ -37,9 +37,9 @@ const Auth = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isSignUp) {
-            dispatch(signUp(formData));
+            dispatch(signUp(formData, navigate));
         } else {
-            dispatch(signIn(formData));
+            dispatch(signIn(formData, navigate ));
         }
     }
 
@@ -49,10 +49,11 @@ const Auth = () => {
 
     const switchMode = () => {
         setIsSignUp((prevIsSignUp) => !prevIsSignUp);
-        handleShowPassword(false);
+        setShowPassword(false);
     }
 
     const googleSuccess = async (tokenReponse) => {
+        console.log(tokenReponse)
         const token = tokenReponse?.access_token;
         try {
             const result = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -61,6 +62,7 @@ const Auth = () => {
                 }
             })
             const data = result?.data;
+            console.log(result);
             dispatch({ type: AUTH, data: { data, token }});
             navigate('/');
         } catch (error) {
@@ -116,7 +118,7 @@ const Auth = () => {
                         startIcon={<Icon />} variant="contained">
                     Google Sign In
                 </Button>
-                <Grid container justify="flex-end">
+                <Grid container justifyContent="flex-end">
                      <Grid item>
                         <Button onClick={switchMode}>
                             { isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}

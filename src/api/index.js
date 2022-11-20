@@ -1,14 +1,25 @@
 import axios from 'axios';
 
-const postUrl = 'http://localhost:5000/posts';
-const userUrl = 'http://localhost:5000/user';
+const API = axios.create({ baseURL: 'http://localhost:5000' });
+
+API.interceptors.request.use((req) => {
+    if(localStorage.getItem('profile')) {
+        if (JSON.parse(localStorage.getItem('profile'))?.data?.sub) {
+            req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem('profile'))?.data?.sub}`; // check google oauth or not
+        } else {
+            req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem('profile')).token}`;
+        }
+    }
+    return req;
+});
 
 // post.js
-export const fetchPosts = () => axios.get(postUrl);
-export const createPost = (newPost) => axios.post(postUrl, newPost);
-export const updatePost = (id, updatedPost) => axios.patch(`${postUrl}/${id}`, updatedPost);
-export const deletePost = (id) => axios.delete(`${postUrl}/${id}`);
-export const likePost = (id) => axios.patch(`${postUrl}/${id}/likePost`);
+export const fetchPosts = () => API.get('/posts');
+export const createPost = (newPost) => API.post('/posts', newPost);
+export const updatePost = (id, updatedPost) => API.patch(`/posts/${id}`, updatedPost);
+export const deletePost = (id) => API.delete(`/posts/${id}`);
+export const likePost = (id) => API.patch(`/posts/${id}/likePost`);
 
 // auth.js
-export const signIn = (accessToken) => axios.post(`${userUrl}/signin`, {googleAccessToken: accessToken});
+export const signIn = (formData) => API.post('/user/signin', formData);
+export const signUp = (formData) => API.post('/user/signup', formData); 
