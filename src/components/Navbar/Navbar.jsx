@@ -5,7 +5,8 @@ import { useDispatch } from 'react-redux';
 import decode from 'jwt-decode';
 
 import useStyles from './styles';
-import memories from '../../images/memories.png';
+import Memories_Logo from '../../images/memories-Logo.png';
+import Memories_Text from '../../images/memories-Text.png';
 import { LOGOUT } from '../../constants/actionTypes';
 
 
@@ -18,27 +19,28 @@ const Navbar = () => {
 
   const logout = () => {
     dispatch({ type: LOGOUT });
-    navigate('/auth');
+    navigate('/');
     setUser(null);
   }
 
   useEffect(() => {
     const token = user?.token;
-    if (token) {
+    if (token && token.substr(0,5) === 'eyJhb') {
       const decodedToken = decode(token);
       if (decodedToken.exp * 1000 < new Date().getTime()) logout();
+    } else {
+      //  need to consider for google oauth
     }
-    setUser(JSON.parse(localStorage.getItem('profile'))); // does not work when in custom login 
+    setUser(JSON.parse(localStorage.getItem('profile')));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
   return (
     <AppBar className={classes.appBar} position="static" color="inherit">
-      <div className={classes.brandContainer}>
-        <Typography component={Link} to="/" className={classes.heading} variant="h2" align="center">
-          Memories
-        </Typography>
-        <img className={classes.image} src={memories} alt="memories" height="60" />
-      </div>
+      <Link to="/" className={classes.brandContainer}>
+        <img src={Memories_Text} alt="memories_text" height="45" />
+        <img className={classes.image} src={Memories_Logo} alt="memories_logo" height="40" />
+      </Link>
       <Toolbar className={classes.toolbar}>
         {user?.data ? (
           <div className={classes.profile}>

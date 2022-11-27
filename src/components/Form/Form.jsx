@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useStyles from './styles';
 import FileBase from 'react-file-base64';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Typography, Paper } from '@material-ui/core';
 import { createPost, updatePost } from '../../actions/posts';
 
@@ -9,8 +10,9 @@ import { createPost, updatePost } from '../../actions/posts';
 
 const Form = ({ currentId, setCurrentId }) => {
     const [postData, setPostData] = useState({ title: '', message: '', tags: '', selectedFile: '', });
-    const post = useSelector((state) => (currentId ? state.posts.find((p) => p._id === currentId) : null));
+    const post = useSelector((state) => (currentId ? state.posts.posts.find((p) => p._id === currentId) : null));
     const dispatch = useDispatch();
+    const navigate= useNavigate();
     const classes = useStyles();
     const user = JSON.parse(localStorage.getItem('profile'));
 
@@ -23,14 +25,14 @@ const Form = ({ currentId, setCurrentId }) => {
         if (currentId) {
             dispatch(updatePost(currentId, { ...postData, name: user?.data?.name }));
         } else {
-            dispatch(createPost({ ...postData, name: user?.data?.name }));
+            dispatch(createPost({ ...postData, name: user?.data?.name }, navigate));
         }
         clear();
     }
 
     if (!user?.data?.name) {
         return (
-            <Paper className={classes.paper}>
+            <Paper className={classes.paper} elevation={6}>
                 <Typography variant='h6' align='center'>
                     Please Sign In to create your own memories and manage other's memories.
                 </Typography>
@@ -44,7 +46,7 @@ const Form = ({ currentId, setCurrentId }) => {
     }
 
     return (
-        <Paper className={classes.paper}>
+        <Paper className={classes.paper} elevation={6}>
             <form autoComplete='off' noValidate className={`${classes.root} ${classes.form}`} onSubmit={handleSubmit}>
                 <Typography variant="h6">{currentId ? 'Updating' : 'Creating'} a Memory</Typography>
                 <TextField name='title' variant='outlined' label='Title' fullWidth value={postData.title} onChange={(e) => setPostData({ ...postData, title: e.target.value })} />
