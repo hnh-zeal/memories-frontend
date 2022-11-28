@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Avatar, Container, Paper, Typography, Grid, Button } from '@material-ui/core';
 // import { GoogleLogin } from 'react-google-login';
-import { useGoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import env from "react-dotenv";
+import { useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 
@@ -56,6 +55,8 @@ const Auth = () => {
 
     const googleSuccess = async (tokenReponse) => {
         const token = tokenReponse?.access_token;
+        const createdAt = new Date().getTime();
+        const expires_in = tokenReponse?.expires_in * 60 * 1000 + createdAt;
         try {
             const result = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
                 headers: {
@@ -63,7 +64,9 @@ const Auth = () => {
                 }
             })
             const data = result?.data;
-            dispatch({ type: AUTH, data: { data, token },});
+            console.log(result);
+            console.log(`Access token created at ${createdAt} milliseconds`);
+            dispatch({ type: AUTH, data: { data, token, expires_in },});
             navigate('/');
         } catch (error) {
             console.log(error);

@@ -45,7 +45,6 @@ const Home = () => {
 
     const handleDelete = (tagtoDelete) => setTags(tags.filter((tag) => tag !== tagtoDelete));
 
-
     return (
         <Grow in>
             <Container maxWidth="xl">

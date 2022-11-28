@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardActions, CardContent, CardMedia, Button, Typography, ButtonBase } from '@material-ui/core';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
@@ -6,38 +6,67 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
-import useStyles from './styles';
 import { useDispatch } from 'react-redux';
 
+import useStyles from './styles';
 import { deletePost, likePost } from '../../../actions/posts';
 
 const Post = ({ post, setCurrentId }) => {
+    const user = JSON.parse(localStorage.getItem('profile'));
     const classes = useStyles();
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [likes, setLikes] = useState(post?.likes);
 
-    const user = JSON.parse(localStorage.getItem('profile'));
+    const userId = user?.data?.sub || user?.data?._id;
+    const hasLikedPost = likes.find((like) => like === userId);
+
+    const handleLike = async () => {
+        dispatch(likePost(post._id));
+
+        if (hasLikedPost) {
+            setLikes(likes.filter((id) => id !== userId));
+        } else {
+            setLikes([...likes, userId]);
+        }
+    }
 
     const Likes = () => {
-        if (post?.likes?.length > 0) {
-            return (post.likes.find((like) => like === (user?.data?.sub || user?.data?._id))
-                ? (
+        if (likes?.length > 0) {
+            return hasLikedPost ?
+                (
                     <>
                         <ThumbUpAltIcon fontSize="small" />
-                        &nbsp;{post.likes.length > 2 ? `You and ${post.likes.length - 1} others` : `${post.likes.length} like${post.likes.length > 1 ? 's' : ''}`}
+                        &nbsp;{likes.length > 2 ? `You and ${likes.length - 1} others` : `${likes.length} like${likes.length > 1 ? 's' : ''}`}
                     </>
                 ) : (
                     <>
                         <ThumbUpOffAltIcon fontSize="small" />
-                        &nbsp;{post.likes.length} {post.likes.length === 1 ? 'Like' : 'Likes'}
+                        &nbsp;{likes.length} {likes.length === 1 ? 'Like' : 'Likes'}
                     </>
                 )
-            )
         } else {
             return (
                 <>
                     <ThumbUpOffAltIcon fontSize="small" />
                     &nbsp; Like
+                </>
+            )
+        }
+    }
+
+    const PostMessage = () => {
+        if (post?.message.length > 200) {
+            return (
+                <>
+                    {post.message.substr(0, 200)}... 
+                    <ButtonBase onClick={openPost} variant="body2"><strong>See More</strong></ButtonBase>
+                </>
+            )
+        } else {
+            return (
+                <>
+                    {post.message}
                 </>
             )
         }
@@ -56,25 +85,27 @@ const Post = ({ post, setCurrentId }) => {
                     <Typography variant="body2">{moment(post.createdAt).fromNow()}</Typography>
                 </div>
             </ButtonBase>
-                {(user?.data?.sub === post?.creator || user?.data?._id === post.creator) && (
-                    <div className={classes.overlay2}>
-                        <Button
-                            style={{ color: 'white' }}
-                            size="small"
-                            onClick={() => setCurrentId(post._id)}>
-                            <MoreHorizIcon fontSize="medium" />
-                        </Button>
-                    </div>
-                )}
-                <div className={classes.details}>
-                    <Typography variant="body2" color="textSecondary">{post.tags.map((tag) => `#${tag} `)}</Typography>
+            {(user?.data?.sub === post?.creator || user?.data?._id === post.creator) && (
+                <div className={classes.overlay2}>
+                    <Button
+                        style={{ color: 'white' }}
+                        size="small"
+                        onClick={() => setCurrentId(post._id)}>
+                        <MoreHorizIcon fontSize="medium" />
+                    </Button>
                 </div>
-                <Typography className={classes.title} variant="h5" gutterBottom>{post.title}</Typography>
-                <CardContent>
-                    <Typography variant="body2" color="textSecondary" component="p">{post.message}</Typography>
-                </CardContent>
+            )}
+            <div className={classes.details}>
+                <Typography variant="body2" color="textSecondary">{post.tags.map((tag) => `#${tag} `)}</Typography>
+            </div>
+            <Typography className={classes.title} variant="h5" gutterBottom>{post.title}</Typography>
+            <CardContent>
+                <Typography variant="body2" color="textSecondary" component="p">
+                    <PostMessage />
+                </Typography>
+            </CardContent>
             <CardActions className={classes.cardActions}>
-                <Button size="small" color="primary" disabled={!user?.data} onClick={() => dispatch(likePost(post._id))}>
+                <Button size="small" color="primary" disabled={!user?.data} onClick={handleLike}>
                     <Likes />
                 </Button>
                 {(user?.data?.sub === post?.creator || user?.data?._id === post.creator) && (

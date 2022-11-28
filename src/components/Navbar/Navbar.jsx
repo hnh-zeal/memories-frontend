@@ -28,8 +28,8 @@ const Navbar = () => {
     if (token && token.substr(0,5) === 'eyJhb') {
       const decodedToken = decode(token);
       if (decodedToken.exp * 1000 < new Date().getTime()) logout();
-    } else {
-      //  need to consider for google oauth
+    } else if (user?.expires_in) {
+      if (user?.expires_in < new Date().getTime()) logout();
     }
     setUser(JSON.parse(localStorage.getItem('profile')));
   // eslint-disable-next-line react-hooks/exhaustive-deps
